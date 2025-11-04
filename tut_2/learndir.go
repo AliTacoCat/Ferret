@@ -3,67 +3,61 @@ package main
 import (
 	"fmt"
 	"os"
-	"time"
+	"path/filepath"
+	"strings"
 )
 
-// type Animal interface {
-//Speak() string
-//}
+func ReadTxt(file os.DirEntry) {
+	if !file.IsDir() && strings.HasSuffix(file.Name(), ".txt") {
+		fmt.Println("\n=== Reading: ", file.Name(), " ===")
 
-//type Dog struct{}
+		fullpath := filepath.Join("/Users/alize/downloads", file.Name())
+		content, err := os.ReadFile(fullpath)
 
-//func (d Dog) Speak() string {
-//	return "Woof!"
-//}
-
-//func (d Dog) Fetch() string {
-//	return "Fetching the ball!"
-//}
-
-//type Cat struct{}
-
-//func (c Cat) Speak() string {
-//	return "Meow!"
-//}
-
-//func SPEAKNEW(a Animal) {
-//	fmt.Println(a.Speak())
-//}
-
-func main() {
-
-	// Create instances of Dog and Cat
-	// myDog := Dog{}
-	// myCat := Cat{}
-
-	//SPEAKNEW(myDog)
-
-	start := time.Now()
-
-	files, err := os.ReadDir("/Users/alize/downloads")
-
-	if err != nil {
-		fmt.Println("Error reading directory:", err)
+		if err != nil {
+			fmt.Println("Error reading file:", file.Name(), ":", err)
+		} else {
+			fmt.Printf("Content:\n%s\n", string(content))
+		}
 		return
 	}
+}
 
-	count := 0
-
+func ReadDir() (int, int, map[string]int) {
+	foldercount := 0
+	filecount := 0
+	counts := make(map[string]int)
+	files, err := os.ReadDir("/Users/alize/downloads")
+	if err != nil {
+		fmt.Println("Error reading directory:", err)
+		return foldercount, filecount, counts
+	}
 	for _, file := range files {
-		info, _ := file.Info() // gets detailed info
-		fmt.Printf("%s - Size: %d bytes\n", file.Name(), info.Size())
+		info, _ := file.Info()
+		ReadTxt(file)
+
+		ext := filepath.Ext(file.Name())
+		counts[ext]++
 		if file.IsDir() {
-			fmt.Println("\n 📁", file.Name(), "(folder)")
+			fmt.Println("\n", file.Name(), "(directory)")
+			foldercount++
 		} else {
-			fmt.Println("\n 📄", file.Name(), "(file)")
-		}
-		if !file.IsDir() {
-			count++
+			fmt.Println("\n", file.Name(), "(file)")
+			fmt.Printf("Size: %d bytes \n", info.Size())
+			fmt.Printf("Modified: %s \n", info.ModTime())
+			filecount++
 		}
 	}
+	return foldercount, filecount, counts
+}
 
-	elapsed := time.Since(start)
+func PrintDir() {
+	foldercount, filecount, counts := ReadDir()
+	fmt.Printf("\n Total files: %d\n", filecount)
+	fmt.Println("\n File types found:")
 
-	fmt.Printf("\n Total files: %d\n", count)
-	fmt.Printf("Execution time: %s\n", elapsed)
+	for ext, fileCount := range counts {
+		fmt.Printf("Extension: '%s' - Count: %d\n", ext, fileCount)
+	}
+	fmt.Printf("Total directories: %d\n", foldercount)
 }
