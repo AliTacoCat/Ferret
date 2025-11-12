@@ -5,11 +5,20 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
-func ReadTxt(file os.DirEntry) {
+type FileStruct struct {
+	Name     string
+	Size     int64
+	Modified time.Time
+	ext      string
+	isFolder bool
+	Content  string
+}
+
+func ReadTxt(file os.DirEntry) (content string) {
 	if !file.IsDir() && strings.HasSuffix(file.Name(), ".txt") {
-		fmt.Println("\n=== Reading: ", file.Name(), " ===")
 
 		fullpath := filepath.Join("/Users/alize/downloads", file.Name())
 		content, err := os.ReadFile(fullpath)
@@ -17,47 +26,66 @@ func ReadTxt(file os.DirEntry) {
 		if err != nil {
 			fmt.Println("Error reading file:", file.Name(), ":", err)
 		} else {
-			fmt.Printf("Content:\n%s\n", string(content))
+			return string(content)
 		}
-		return
 	}
+	return
 }
 
-func ReadDir() (int, int, map[string]int) {
-	foldercount := 0
-	filecount := 0
+func ReadDir() (map[string]int, []FileStruct) {
 	counts := make(map[string]int)
 	files, err := os.ReadDir("/Users/alize/downloads")
 	if err != nil {
 		fmt.Println("Error reading directory:", err)
-		return foldercount, filecount, counts
+		return counts, nil
 	}
+
+	var StructList []FileStruct
+
 	for _, file := range files {
 		info, _ := file.Info()
-		ReadTxt(file)
 
 		ext := filepath.Ext(file.Name())
 		counts[ext]++
-		if file.IsDir() {
-			fmt.Println("\n", file.Name(), "(directory)")
-			foldercount++
-		} else {
-			fmt.Println("\n", file.Name(), "(file)")
-			fmt.Printf("Size: %d bytes \n", info.Size())
-			fmt.Printf("Modified: %s \n", info.ModTime())
-			filecount++
+		returnedFileInfo := FileStruct{
+			Name:     info.Name(),
+			Size:     info.Size(),
+			Modified: info.ModTime(),
+			ext:      ext,
+			isFolder: file.IsDir(),
+			Content:  ReadTxt(file),
 		}
+
+		for _, fileInfo := range StructList {
+			if fileInfo.Name == returnedFileInfo.Name {
+				continue
+			}
+		}
+		StructList = append(StructList, returnedFileInfo)
 	}
-	return foldercount, filecount, counts
+	return counts, StructList
 }
 
 func PrintDir() {
-	foldercount, filecount, counts := ReadDir()
-	fmt.Printf("\n Total files: %d\n", filecount)
+
+	counts, StructList := ReadDir()
+	////
+	fmt.Println("\n Detailed File Information:")
+	for _, fileInfo := range StructList {
+		if fileInfo.ext == ".txt" && !fileInfo.isFolder {
+			fmt.Printf("\n Text File: %s \n Size: %d bytes \n Modified: %s \n Extension: %s\n Content: \n%s\n",
+				fileInfo.Name, fileInfo.Size, fileInfo.Modified.Format(time.RFC1123), fileInfo.ext, fileInfo.Content)
+		} else if fileInfo.isFolder {
+			fmt.Printf("\n Directory: %s \n | Modified: %s\n", fileInfo.Name+"\n", fileInfo.Modified.Format(time.RFC1123))
+		} else {
+			fmt.Printf("\n File: %s \n Size: %d bytes \n Modified: %s \n Extension: %s\n",
+				fileInfo.Name, fileInfo.Size, fileInfo.Modified.Format(time.RFC1123), fileInfo.ext)
+		}
+	}
+
 	fmt.Println("\n File types found:")
 
 	for ext, fileCount := range counts {
 		fmt.Printf("Extension: '%s' - Count: %d\n", ext, fileCount)
 	}
-	fmt.Printf("Total directories: %d\n", foldercount)
 }
