@@ -14,14 +14,6 @@ type EmbeddingModel struct {
 }
 
 type EmbeddingRequest struct {
-<<<<<<< HEAD
-	Prompt string `json:"prompt"`
-	Model  string `json:"model"`
-}
-
-type EmbeddingResponse struct {
-	Embedding []float64 `json:"embedding"`
-=======
 	Input string `json:"prompt"`
 	Model string `json:"model"`
 }
@@ -38,7 +30,6 @@ type EmbeddingResponse struct {
 		PromptTokens int `json:"prompt_tokens"`
 		TotalTokens  int `json:"total_tokens"`
 	} `json:"usage"`
->>>>>>> 6f34e653d8d8ba5c07e44a4105e180fe46bfe457
 }
 
 func GetEmbedding(text string) ([]float64, error) {
@@ -47,13 +38,8 @@ func GetEmbedding(text string) ([]float64, error) {
 	fmt.Println("Using URL:", url)
 
 	reqBody := EmbeddingRequest{
-<<<<<<< HEAD
-		Prompt: text,
-		Model:  "nomic-embed-text", // Replace with your model name
-=======
 		Input: text,
 		Model: "nomic-embed-text", // Replace with your model name
->>>>>>> 6f34e653d8d8ba5c07e44a4105e180fe46bfe457
 	}
 
 	// Serialize request body to JSON
@@ -75,13 +61,10 @@ func GetEmbedding(text string) ([]float64, error) {
 		return nil, err
 	}
 
-<<<<<<< HEAD
 	fmt.Println("Raw response from Ollama:")
 	fmt.Println(string(body))
 	fmt.Println("---")
 
-=======
->>>>>>> 6f34e653d8d8ba5c07e44a4105e180fe46bfe457
 	// Deserialize JSON response into EmbeddingResponse struct
 	var embeddingResp EmbeddingResponse
 	if err := json.Unmarshal(body, &embeddingResp); err != nil {
@@ -89,20 +72,12 @@ func GetEmbedding(text string) ([]float64, error) {
 	}
 
 	// Assert that we have at least one embedding returned
-<<<<<<< HEAD
 	if len(embeddingResp.Embedding) == 0 {
-=======
-	if len(embeddingResp.Data) == 0 {
->>>>>>> 6f34e653d8d8ba5c07e44a4105e180fe46bfe457
 		return nil, fmt.Errorf("no embeddings returned")
 	}
 
 	// Return the first embedding vector
-<<<<<<< HEAD
 	return embeddingResp.Embedding, nil
-=======
-	return embeddingResp.Data[0].Embedding, nil
->>>>>>> 6f34e653d8d8ba5c07e44a4105e180fe46bfe457
 }
 
 func main() {
