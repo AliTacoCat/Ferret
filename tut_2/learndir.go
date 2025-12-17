@@ -1,4 +1,4 @@
-package tut_2
+package main
 
 import (
 	"fmt"

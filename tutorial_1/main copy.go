@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func main() {
+func StopErroring() {
 	var printValue string = "He, World!"
 	printMe(printValue)
 

@@ -19,17 +19,7 @@ type EmbeddingRequest struct {
 }
 
 type EmbeddingResponse struct {
-	Object string `json:"object"`
-	Data   []struct {
-		Object    string    `json:"object"`
-		Embedding []float64 `json:"embedding"`
-		Index     int       `json:"index"`
-	} `json:"data"`
-	Model string `json:"model"`
-	Usage struct {
-		PromptTokens int `json:"prompt_tokens"`
-		TotalTokens  int `json:"total_tokens"`
-	} `json:"usage"`
+	Embedding []float64 `json:"embedding"`
 }
 
 func GetEmbedding(text string) ([]float64, error) {
@@ -80,7 +70,7 @@ func GetEmbedding(text string) ([]float64, error) {
 	return embeddingResp.Embedding, nil
 }
 
-func main() {
+func Embed() {
 	text := "Hello, this is a test sentence for embedding generation."
 
 	embedding, err := GetEmbedding(text)

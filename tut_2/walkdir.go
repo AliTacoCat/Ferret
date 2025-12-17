@@ -1,14 +1,24 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
+	"context"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/jackc/pgx/v5"
 )
+
+func connectDB() error {
+	// postgres://Alize:@localhost:5432/postgres
+	conn, err := pgx.Connect(context.Background(), os.Getenv("postgres://Alize:@localhost:5432/postgres"))
+	if err != nil {
+		fmt.Println(os.Stderr, "Unable to connect to database %v\n", err)
+		return nil, err
+	}
+
+	return conn, nil
+}
 
 type Files struct {
 	FullPath string
@@ -18,72 +28,6 @@ type Files struct {
 	ext      string
 	isFolder bool
 	Contents string
-}
-
-type EmbeddingModel struct {
-	Name string
-	Url  string
-}
-
-type EmbeddingRequest struct {
-	Input string `json:"prompt"`
-	Model string `json:"model"`
-}
-
-type EmbeddingResponse struct {
-	Object string `json:"object"`
-	Data   []struct {
-		Object    string    `json:"object"`
-		Embedding []float64 `json:"embedding"`
-		Index     int       `json:"index"`
-	} `json:"data"`
-	Model string `json:"model"`
-	Usage struct {
-		PromptTokens int `json:"prompt_tokens"`
-		TotalTokens  int `json:"total_tokens"`
-	} `json:"usage"`
-}
-
-func GetEmbedding(text string) ([]float64, error) {
-	// LM Studio default endpoint
-	url := "http://localhost:11434/api/embeddings"
-
-	reqBody := EmbeddingRequest{
-		Input: text,
-		Model: "nomic-embed-text", // Replace with your model name
-	}
-
-	// Serialize request body to JSON
-	jsonData, err := json.Marshal(reqBody)
-	if err != nil {
-		return nil, err
-	}
-
-	// Send JSON HTTP POST request and wait for response
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	// Read response body into byte slice
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	// Deserialize JSON response into EmbeddingResponse struct
-	var embedResp EmbeddingResponse
-	err = json.Unmarshal(body, &embedResp)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(embedResp.Data) > 0 {
-		return embedResp.Data[0].Embedding, nil
-	}
-
-	return nil, fmt.Errorf("no embedding data found in response")
 }
 
 func GetAllFiles(path string) []Files {
