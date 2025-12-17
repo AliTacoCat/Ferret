@@ -1,24 +1,10 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
-
-	"github.com/jackc/pgx/v5"
 )
-
-func connectDB() error {
-	// postgres://Alize:@localhost:5432/postgres
-	conn, err := pgx.Connect(context.Background(), os.Getenv("postgres://Alize:@localhost:5432/postgres"))
-	if err != nil {
-		fmt.Println(os.Stderr, "Unable to connect to database %v\n", err)
-		return nil, err
-	}
-
-	return conn, nil
-}
 
 type Files struct {
 	FullPath string

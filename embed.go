@@ -22,24 +22,19 @@ type EmbeddingResponse struct {
 	Embedding []float64 `json:"embedding"`
 }
 
-func GetEmbedding(text string) ([]float64, error) {
+func GetEmbedding(embeddingModel EmbeddingModel, request EmbeddingRequest) ([]float64, error) {
 	// LM Studio default endpoint
-	url := "http://localhost:11434/api/embeddings"
-	fmt.Println("Using URL:", url)
-
-	reqBody := EmbeddingRequest{
-		Input: text,
-		Model: "nomic-embed-text", // Replace with your model name
-	}
+	// url := "http://localhost:11434/api/embeddings"
+	fmt.Println("Using URL:", embeddingModel.Url)
 
 	// Serialize request body to JSON
-	jsonData, err := json.Marshal(reqBody)
+	jsonData, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
 	}
 
 	// Send JSON HTTP POST request and wait for response
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
+	resp, err := http.Post(embeddingModel.Url, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +65,7 @@ func GetEmbedding(text string) ([]float64, error) {
 	return embeddingResp.Embedding, nil
 }
 
-func Embed() {
+func TestEmbed() {
 	text := "Hello, this is a test sentence for embedding generation."
 
 	embedding, err := GetEmbedding(text)
