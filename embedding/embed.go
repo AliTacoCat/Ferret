@@ -1,4 +1,4 @@
-package main
+package embedding
 
 import (
 	"bytes"
@@ -8,12 +8,12 @@ import (
 	"net/http"
 )
 
-type EmbeddingModel struct {
+type Model struct {
 	Name string
 	Url  string
 }
 
-type EmbeddingRequest struct {
+type Request struct {
 	Input string `json:"prompt"`
 	Model string `json:"model"`
 }
@@ -22,7 +22,7 @@ type EmbeddingResponse struct {
 	Embedding []float64 `json:"embedding"`
 }
 
-func GetEmbedding(embeddingModel EmbeddingModel, request EmbeddingRequest) ([]float64, error) {
+func Get(embeddingModel Model, request Request) ([]float64, error) {
 	// LM Studio default endpoint
 	// url := "http://localhost:11434/api/embeddings"
 	fmt.Println("Using URL:", embeddingModel.Url)
@@ -65,15 +65,15 @@ func GetEmbedding(embeddingModel EmbeddingModel, request EmbeddingRequest) ([]fl
 	return embeddingResp.Embedding, nil
 }
 
-func TestEmbed() {
-	text := "Hello, this is a test sentence for embedding generation."
+// func TestEmbed() {
+// 	text := "Hello, this is a test sentence for embedding generation."
 
-	embedding, err := GetEmbedding(text)
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		return
-	}
+// 	embedding, err := GetEmbedding(text)
+// 	if err != nil {
+// 		fmt.Printf("Error: %v\n", err)
+// 		return
+// 	}
 
-	fmt.Printf("First 5 values: %v\n", embedding[:5])
-	fmt.Printf("The Length of embedding is %d\n", len(embedding))
-}
+// 	fmt.Printf("First 5 values: %v\n", embedding[:5])
+// 	fmt.Printf("The Length of embedding is %d\n", len(embedding))
+// }

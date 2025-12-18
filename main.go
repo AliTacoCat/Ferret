@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"ferret/database"
+	"ferret/embedding"
 	"os"
 )
 
@@ -20,17 +21,17 @@ func main() {
 
 	// fmt.Println(name, weight)
 
-	embeddingModel := EmbeddingModel{
+	embeddingModel := embedding.Model{
 		Name: "nomic-embed-text",
 		Url:  "http://localhost:11434/api/embeddings",
 	}
 
-	embeddingRequest := EmbeddingRequest{
+	embeddingRequest := embedding.Request{
 		Input: "Hello, this is a test sentence for embedding generation.",
 		Model: "nomic-embed-text",
 	}
 
-	_, err := GetEmbedding(embeddingModel, embeddingRequest)
+	_, err := embedding.Get(embeddingModel, embeddingRequest)
 	if err != nil {
 		panic(err)
 	}
