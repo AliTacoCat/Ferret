@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func main() {
+func test() {
 	conn := database.Connect(os.Getenv("postgres://Alize:@localhost:5432/postgres"))
 	defer conn.Close(context.Background())
 

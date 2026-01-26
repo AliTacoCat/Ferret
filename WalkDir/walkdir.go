@@ -1,4 +1,4 @@
-package main
+package Walking
 
 import (
 	"fmt"
@@ -70,7 +70,7 @@ func contains(slice []string, item string) bool {
 // 	}
 // }
 
-func run() {
+func PrintInfo() {
 	files := GetAllFiles("/Users/alize/downloads")
 
 	for _, file := range files {
