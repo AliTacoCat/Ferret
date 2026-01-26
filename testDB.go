@@ -8,7 +8,7 @@ import (
 	"log"
 )
 
-func main() {
+func test() {
 	// Connect to database
 	url := "postgres://alize@localhost:5432/searchengine"
 	conn := database.Connect(url)

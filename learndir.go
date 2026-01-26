@@ -1,3 +1,5 @@
+//simple program to read files from a directory and print their details
+
 package main
 
 import (

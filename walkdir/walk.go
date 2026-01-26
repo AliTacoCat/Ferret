@@ -1,7 +1,6 @@
-package Walking
+package walkdir
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -69,27 +68,3 @@ func contains(slice []string, item string) bool {
 // 		prompt: prompt,
 // 	}
 // }
-
-func PrintInfo() {
-	files := GetAllFiles("/Users/alize/downloads")
-
-	for _, file := range files {
-		fmt.Println(file.FileName)
-		fmt.Println("Path:", file.FullPath)
-		fmt.Println("Size:", file.Size)
-		fmt.Println("Modified:", file.Modified)
-		fmt.Println("Extension:", file.ext)
-		fmt.Println("Is Folder:", file.isFolder)
-		if file.ext == ".txt" || file.ext == ".rtf" {
-			fmt.Println("Contents:")
-			content, err := os.ReadFile(file.FullPath)
-			if err != nil {
-				fmt.Println("Error reading file:", err)
-			} else {
-				fmt.Println(string(content))
-			}
-		}
-		fmt.Println("-----")
-	}
-	fmt.Println("Total files:", len(files))
-}
