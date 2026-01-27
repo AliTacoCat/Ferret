@@ -1,6 +1,8 @@
-package walkdir
+package main
 
 import (
+	"ferret/embedding"
+	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -10,7 +12,7 @@ type Files struct {
 	FileName string
 	Size     int64
 	Modified string
-	ext      string
+	Ext      string
 	isFolder bool
 	Contents string
 }
@@ -34,7 +36,7 @@ func GetAllFiles(path string) []Files {
 			FileName: info.Name(),
 			Size:     info.Size(),
 			Modified: info.ModTime().String(),
-			ext:      filepath.Ext(info.Name()),
+			Ext:      filepath.Ext(info.Name()),
 			isFolder: info.IsDir(),
 			Contents: "",
 		}
@@ -42,7 +44,7 @@ func GetAllFiles(path string) []Files {
 		if contains(FoldSkip, info.Name()) || contains(FileSkip, info.Name()) {
 			return nil
 		}
-		if contains(FileSkip, file.ext) {
+		if contains(FileSkip, file.Ext) {
 			return nil
 		}
 
@@ -68,3 +70,43 @@ func contains(slice []string, item string) bool {
 // 		prompt: prompt,
 // 	}
 // }
+
+func main() {
+	embeddingModel := embedding.Model{
+		Url:  "http://localhost:1234/v1/embeddings",
+		Name: "nomic-embed-text",
+	}
+
+	files := GetAllFiles("/Users/alize/downloads")
+
+	for _, file := range files {
+		request := embedding.Request{
+			Input: file.Contents,
+			Model: embeddingModel.Name,
+		}
+		fmt.Println(file.FileName)
+		fmt.Println("Path:", file.FullPath)
+		fmt.Println("Size:", file.Size)
+		fmt.Println("Modified:", file.Modified)
+		fmt.Println("Extension:", file.Ext)
+		fmt.Println("Is Folder:", file.isFolder)
+		if file.Ext == ".txt" || file.Ext == ".rtf" {
+			fmt.Println("Contents:")
+			content, err := os.ReadFile(file.FullPath)
+			if err != nil {
+				fmt.Println("Error reading file:", err)
+			} else {
+				fmt.Println(string(content))
+			}
+			vector, err := embedding.Get(embeddingModel, request)
+			if err != nil {
+				fmt.Println("Error getting embedding:", err)
+			} else {
+				fmt.Println("Embedding vector:", vector)
+			}
+
+		}
+		fmt.Println("-----")
+	}
+	fmt.Println("Total files:", len(files))
+}

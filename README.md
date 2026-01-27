@@ -8,7 +8,7 @@ Most traditional search engines can only spot files that exactly match the words
 
 ## Tech Stack
 - **Language:** GO
-- **Embeddings:** Ollama, nomic-embed-text
+- **Embeddings:** LM Studio, nomic-embed-text
 - **Database:** PostgreSQL with pgvector extension
 
 ## Current status
@@ -23,3 +23,5 @@ Most traditional search engines can only spot files that exactly match the words
 - Supporting images and videos
 
 ** I am learning GO and AI as I create this project :)**
+
+As a ---- I want to ---- So that I may/can achieve ---- 

@@ -14,7 +14,7 @@ type Model struct {
 }
 
 type Request struct {
-	Input string `json:"prompt"`
+	Input string `json:"input"`
 	Model string `json:"model"`
 }
 
