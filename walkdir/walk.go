@@ -1,4 +1,4 @@
-package main
+package walkdir
 
 import (
 	"ferret/embedding"
@@ -71,7 +71,7 @@ func contains(slice []string, item string) bool {
 // 	}
 // }
 
-func main() {
+func WalkEmbed() {
 	embeddingModel := embedding.Model{
 		Url:  "http://localhost:1234/v1/embeddings",
 		Name: "nomic-embed-text",
@@ -110,3 +110,5 @@ func main() {
 	}
 	fmt.Println("Total files:", len(files))
 }
+
+// store name, path, any identifible information about the file after getting embeddings

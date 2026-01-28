@@ -1,47 +1,39 @@
 package main
 
-// func ignore() {
-// 	// Step 1: Read all files from the specified directory
-// 	path := "/Users/alize/downloads"
-// 	files := walkdir.GetAllFiles(path)
+import (
+	"context"
+	"ferret/database"
+	"ferret/embedding"
+	"ferret/walkdir"
+)
 
-// 	// Step 2: Connect to the database
-// 	dbURL := "postgres://alize@localhost:5432/searchengine"
-// 	conn := database.Connect(dbURL)
-// 	defer conn.Close(context.Background())
+func main() {
 
-// 	// Step 3: Initialize embedding model
-// 	embeddingModel := embedding.Model{
-// 		Url:  "http://localhost:11434/api/embeddings",
-// 		Name: "nomic-embed-text",
-// 	}
+	//connects to database
+	dbURL := "postgres://alize@localhost:5432/searchengine"
+	conn := database.Connect(dbURL)
+	defer conn.Close(context.Background())
 
-// 	// Step 4: Process each file
-// 	for _, file := range files {
-// 		// Get embedding for the file content
-// 		request := embedding.Request{
-// 			Input: file.Contents,
-// 			Model: embeddingModel.Name,
-// 		}
-// 		vector, err := embedding.Get(embeddingModel, request)
-// 		if err != nil {
-// 			continue
-// 		}
+	//walk and embed files
+	embeddingModel := embedding.Model{
+		Url:  "http://localhost:1234/v1/embeddings",
+		Name: "nomic-embed-text",
+	}
 
-// 		//	 Insert file metadata and embedding into the databas
-// 		_, err = conn.Exec(
-// 			context.Background(),
-// 			"INSERT INTO files (filepath, filename, file_size, extension, embedding) VALUES ($1, $2, $3, $4, $5)",
-// 			path,
-// 			file.FileName,
-// 			file.Size,
-// 			file.Ext,
-// 			vector,
-// 		)
-// 		if err != nil {
-// 			continue
-// 		}
-// 	}
+	files := walkdir.GetAllFiles("/Users/alize/downloads")
+	for _, file := range files {
+		request := embedding.Request{
+			Input: file.Contents,
+			Model: embeddingModel.Name,
+		}
 
-// 	os.Exit(0)
-// }
+		embeddingVector, err := embedding.Get(embeddingModel, request)
+		if err != nil {
+			panic(err)
+		}
+
+		//store in database
+		database.InsertFileEmbedding(conn, file.FileName, file.FullPath, embeddingVector)
+	}
+
+}

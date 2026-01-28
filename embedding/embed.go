@@ -19,12 +19,15 @@ type Request struct {
 }
 
 type EmbeddingResponse struct {
-	Embedding []float64 `json:"embedding"`
+	Data []struct {
+		Embedding []float64 `json:"embedding"`
+		Index     int       `json:"index"`
+	} `json:"data"`
 }
 
 func Get(embeddingModel Model, request Request) ([]float64, error) {
 	// LM Studio default endpoint
-	// url := "http://localhost:11434/api/embeddings"
+	// url := "http://localhost:1234/v1/embeddings"
 	fmt.Println("Using URL:", embeddingModel.Url)
 
 	// Serialize request body to JSON
@@ -46,7 +49,7 @@ func Get(embeddingModel Model, request Request) ([]float64, error) {
 		return nil, err
 	}
 
-	fmt.Println("Raw response from Ollama:")
+	fmt.Println("Raw response from LM Studio:")
 	fmt.Println(string(body))
 	fmt.Println("---")
 
@@ -56,13 +59,10 @@ func Get(embeddingModel Model, request Request) ([]float64, error) {
 		return nil, err
 	}
 
-	// Assert that we have at least one embedding returned
-	if len(embeddingResp.Embedding) == 0 {
+	if len(embeddingResp.Data) == 0 {
 		return nil, fmt.Errorf("no embeddings returned")
 	}
-
-	// Return the first embedding vector
-	return embeddingResp.Embedding, nil
+	return embeddingResp.Data[0].Embedding, nil
 }
 
 // func TestEmbed() {
