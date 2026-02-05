@@ -1,6 +1,7 @@
 package walkdir
 
 import (
+	"ferret/config"
 	"ferret/embedding"
 	"fmt"
 	"os"
@@ -19,21 +20,24 @@ type Files struct {
 }
 
 // GetAllFiles walks the directory tree starting at path and returns metadata
-// for all non-skipped files. It filters out common directories (node_modules,
-// vendor, .git) and file types (.jpg, .mp4, .png, .dmg).
-func GetAllFiles(path string) []Files {
+// for all non-skipped files. It uses the provided config for filtering rules.
+func GetAllFiles(path string, cfg config.FileWalkConfig) []Files {
 	var listOfFiles []Files
 
 	// Use maps for O(1) lookup instead of O(n) slice search
-	foldSkip := map[string]bool{
-		".": true, "node_modules": true, "vendor": true,
-		"applications": true, "Library": true, ".git": true,
+	foldSkip := make(map[string]bool)
+	for _, folder := range cfg.SkipFolders {
+		foldSkip[folder] = true
 	}
-	fileSkip := map[string]bool{
-		".": true, "thumbs.db": true,
+
+	fileSkip := make(map[string]bool)
+	for _, file := range cfg.SkipFiles {
+		fileSkip[file] = true
 	}
-	extSkip := map[string]bool{
-		".jpg": true, ".mp4": true, ".png": true, ".dmg": true,
+
+	extSkip := make(map[string]bool)
+	for _, ext := range cfg.SkipExtensions {
+		extSkip[ext] = true
 	}
 
 	filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
@@ -68,13 +72,20 @@ func GetAllFiles(path string) []Files {
 
 // WalkEmbed is a debug function that walks files and attempts to generate
 // embeddings for .txt and .rtf files, printing results to stdout.
+// It loads configuration from config.json.
 func WalkEmbed() {
-	model := embedding.Model{
-		Url:  "http://localhost:1234/v1/embeddings",
-		Name: "nomic-embed-text",
+	cfg, err := config.Load("config.json")
+	if err != nil {
+		fmt.Println("Error loading config:", err)
+		return
 	}
 
-	files := GetAllFiles("/Users/alize/downloads")
+	model := embedding.Model{
+		Url:  cfg.Embedding.URL,
+		Name: cfg.Embedding.ModelName,
+	}
+
+	files := GetAllFiles(cfg.FileWalk.RootPath, cfg.FileWalk)
 
 	for _, file := range files {
 		request := embedding.Request{
