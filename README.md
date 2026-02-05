@@ -25,3 +25,4 @@ Most traditional search engines can only spot files that exactly match the words
 ** I am learning GO and AI as I create this project :)**
 
 As a ---- I want to ---- So that I may/can achieve ---- 
+As a user I want to find similar topics to my search So that I can achieve more efficiency while seraching for files.

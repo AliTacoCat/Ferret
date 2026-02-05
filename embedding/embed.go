@@ -28,7 +28,7 @@ type EmbeddingResponse struct {
 func Get(embeddingModel Model, request Request) ([]float64, error) {
 	// LM Studio default endpoint
 	// url := "http://localhost:1234/v1/embeddings"
-	fmt.Println("Using URL:", embeddingModel.Url)
+	// fmt.Println("Using URL:", embeddingModel.Url)
 
 	// Serialize request body to JSON
 	jsonData, err := json.Marshal(request)
@@ -49,9 +49,9 @@ func Get(embeddingModel Model, request Request) ([]float64, error) {
 		return nil, err
 	}
 
-	fmt.Println("Raw response from LM Studio:")
-	fmt.Println(string(body))
-	fmt.Println("---")
+	// fmt.Println("Raw response from LM Studio:")
+	// fmt.Println(string(body))
+	// fmt.Println("---")
 
 	// Deserialize JSON response into EmbeddingResponse struct
 	var embeddingResp EmbeddingResponse

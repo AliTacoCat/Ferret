@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/pgvector/pgvector-go"
 )
 
 func Connect(url string) *pgx.Conn {
@@ -17,23 +18,29 @@ func Connect(url string) *pgx.Conn {
 		os.Exit(1)
 	}
 
+	conn.TypeMap().RegisterType(&pgtype.Type{
+		Name:  "vector",
+		OID:   16385, // Vector type OID
+		Codec: pgvector.VectorCodec{},
+	})
+
 	return conn
 }
 
-func vectorToString(vector []float64) string {
-	// Convert []float64 to "[1.2, 3.4, 5.6, ...]" format
-	parts := make([]string, len(vector))
-	for i, v := range vector {
-		parts[i] = fmt.Sprintf("%f", v)
-	}
-	return "[" + strings.Join(parts, ",") + "]"
-}
+func InsertFileEmbedding(conn *pgx.Conn, fileName, filePath, fileExtension, fileContents string, fileSize int, fileModifiedDate string, vector []float32) {
+	pgvector := pgvector.NewVector(vector)
+	println("===========================")
+	println("FileName:", fileName)
+	println("FilePath:", filePath)
+	println("FileExtension:", fileExtension)
+	println("FileSize:", fileSize)
+	println("FileModifiedDate:", fileModifiedDate)
+	println("VectorStr:", vector[0:60], "...")
+	println("===========================")
 
-func InsertFileEmbedding(conn *pgx.Conn, fileName string, filePath string, vector []float64) {
-	vectorStr := vectorToString(vector)
 	_, err := conn.Exec(context.Background(),
 		"INSERT INTO public.files (filename, filepath, content, file_size, modified_at, extension, embedding) VALUES ($1, $2, $3, $4, $5, $6, $7)",
-		fileName, filePath, "", 0, "", "", vectorStr,
+		fileName, filePath, fileContents, fileSize, fileModifiedDate, fileExtension, pgvector,
 	)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to insert embedding: %v\n", err)
