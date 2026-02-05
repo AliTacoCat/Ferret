@@ -39,7 +39,9 @@ func main() {
 		}
 
 		// Store in database
-		database.InsertFileEmbedding(conn, file.FileName, file.FullPath, file.Ext, file.Contents, int(file.Size), file.Modified, vectorFloat32)
+		err = database.InsertFileEmbedding(conn, file.FileName, file.FullPath, file.Ext, file.Contents, int(file.Size), file.Modified, vectorFloat32)
+		if err != nil {
+			panic(err)
+		}
 	}
-
 }

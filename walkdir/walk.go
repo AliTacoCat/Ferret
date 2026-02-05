@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 )
 
+// Files represents metadata about a file in the filesystem.
 type Files struct {
 	FullPath string
 	FileName string
@@ -17,10 +18,23 @@ type Files struct {
 	Contents string
 }
 
+// GetAllFiles walks the directory tree starting at path and returns metadata
+// for all non-skipped files. It filters out common directories (node_modules,
+// vendor, .git) and file types (.jpg, .mp4, .png, .dmg).
 func GetAllFiles(path string) []Files {
 	var listOfFiles []Files
-	FoldSkip := []string{".", "node_modules", "vendor", "applications", "Library", ".git"}
-	FileSkip := []string{".", "thumbs.db", ".jpg", ".mp4", ".png", ".dmg"}
+
+	// Use maps for O(1) lookup instead of O(n) slice search
+	foldSkip := map[string]bool{
+		".": true, "node_modules": true, "vendor": true,
+		"applications": true, "Library": true, ".git": true,
+	}
+	fileSkip := map[string]bool{
+		".": true, "thumbs.db": true,
+	}
+	extSkip := map[string]bool{
+		".jpg": true, ".mp4": true, ".png": true, ".dmg": true,
+	}
 
 	filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -41,10 +55,7 @@ func GetAllFiles(path string) []Files {
 			Contents: "",
 		}
 
-		if contains(FoldSkip, info.Name()) || contains(FileSkip, info.Name()) {
-			return nil
-		}
-		if contains(FileSkip, file.Ext) {
+		if foldSkip[info.Name()] || fileSkip[info.Name()] || extSkip[file.Ext] {
 			return nil
 		}
 
@@ -55,24 +66,10 @@ func GetAllFiles(path string) []Files {
 	return listOfFiles
 }
 
-func contains(slice []string, item string) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
-	}
-	return false
-}
-
-// func marshalFilesToJSON(files []Files, prompt string) marshalFiles {
-// 	return marshalFiles{
-// 		model:  files,
-// 		prompt: prompt,
-// 	}
-// }
-
+// WalkEmbed is a debug function that walks files and attempts to generate
+// embeddings for .txt and .rtf files, printing results to stdout.
 func WalkEmbed() {
-	embeddingModel := embedding.Model{
+	model := embedding.Model{
 		Url:  "http://localhost:1234/v1/embeddings",
 		Name: "nomic-embed-text",
 	}
@@ -82,7 +79,7 @@ func WalkEmbed() {
 	for _, file := range files {
 		request := embedding.Request{
 			Input: file.Contents,
-			Model: embeddingModel.Name,
+			Model: model.Name,
 		}
 		fmt.Println(file.FileName)
 		fmt.Println("Path:", file.FullPath)
@@ -98,13 +95,12 @@ func WalkEmbed() {
 			} else {
 				fmt.Println(string(content))
 			}
-			vector, err := embedding.Get(embeddingModel, request)
+			vector, err := embedding.Get(model, request)
 			if err != nil {
 				fmt.Println("Error getting embedding:", err)
 			} else {
 				fmt.Println("Embedding vector:", vector)
 			}
-
 		}
 		fmt.Println("-----")
 	}
