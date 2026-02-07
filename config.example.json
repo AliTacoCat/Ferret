@@ -1,0 +1,30 @@
+{
+  "database": {
+    "url": "postgres://username@localhost:5432/database_name"
+  },
+  "embedding": {
+    "url": "http://localhost:1234/v1/embeddings",
+    "model_name": "nomic-embed-text"
+  },
+  "file_walk": {
+    "root_path": "/path/to/your/files",
+    "skip_folders": [
+      ".",
+      "node_modules",
+      "vendor",
+      "applications",
+      "Library",
+      ".git"
+    ],
+    "skip_files": [
+      ".",
+      "thumbs.db"
+    ],
+    "skip_extensions": [
+      ".jpg",
+      ".mp4",
+      ".png",
+      ".dmg"
+    ]
+  }
+}

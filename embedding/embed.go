@@ -8,16 +8,19 @@ import (
 	"net/http"
 )
 
+// Model contains the configuration for an embedding service.
 type Model struct {
 	Name string
 	Url  string
 }
 
+// Request represents the JSON structure for embedding API requests.
 type Request struct {
 	Input string `json:"input"`
 	Model string `json:"model"`
 }
 
+// EmbeddingResponse represents the JSON structure of embedding API responses.
 type EmbeddingResponse struct {
 	Data []struct {
 		Embedding []float64 `json:"embedding"`
@@ -25,10 +28,9 @@ type EmbeddingResponse struct {
 	} `json:"data"`
 }
 
+// Get sends text to the embedding service and returns the embedding vector.
+// It returns an error if the HTTP request fails or no embeddings are returned.
 func Get(embeddingModel Model, request Request) ([]float64, error) {
-	// LM Studio default endpoint
-	// url := "http://localhost:1234/v1/embeddings"
-	// fmt.Println("Using URL:", embeddingModel.Url)
 
 	// Serialize request body to JSON
 	jsonData, err := json.Marshal(request)
@@ -49,10 +51,6 @@ func Get(embeddingModel Model, request Request) ([]float64, error) {
 		return nil, err
 	}
 
-	// fmt.Println("Raw response from LM Studio:")
-	// fmt.Println(string(body))
-	// fmt.Println("---")
-
 	// Deserialize JSON response into EmbeddingResponse struct
 	var embeddingResp EmbeddingResponse
 	if err := json.Unmarshal(body, &embeddingResp); err != nil {
@@ -64,16 +62,3 @@ func Get(embeddingModel Model, request Request) ([]float64, error) {
 	}
 	return embeddingResp.Data[0].Embedding, nil
 }
-
-// func TestEmbed() {
-// 	text := "Hello, this is a test sentence for embedding generation."
-
-// 	embedding, err := GetEmbedding(text)
-// 	if err != nil {
-// 		fmt.Printf("Error: %v\n", err)
-// 		return
-// 	}
-
-// 	fmt.Printf("First 5 values: %v\n", embedding[:5])
-// 	fmt.Printf("The Length of embedding is %d\n", len(embedding))
-// }

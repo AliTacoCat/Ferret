@@ -1,12 +1,14 @@
 package walkdir
 
 import (
+	"ferret/config"
 	"ferret/embedding"
 	"fmt"
 	"os"
 	"path/filepath"
 )
 
+// Files represents metadata about a file in the filesystem.
 type Files struct {
 	FullPath string
 	FileName string
@@ -17,10 +19,26 @@ type Files struct {
 	Contents string
 }
 
-func GetAllFiles(path string) []Files {
+// GetAllFiles walks the directory tree starting at path and returns metadata
+// for all non-skipped files. It uses the provided config for filtering rules.
+func GetAllFiles(path string, cfg config.FileWalkConfig) []Files {
 	var listOfFiles []Files
-	FoldSkip := []string{".", "node_modules", "vendor", "applications", "Library", ".git"}
-	FileSkip := []string{".", "thumbs.db", ".jpg", ".mp4", ".png", ".dmg"}
+
+	// Use maps for O(1) lookup instead of O(n) slice search
+	foldSkip := make(map[string]bool)
+	for _, folder := range cfg.SkipFolders {
+		foldSkip[folder] = true
+	}
+
+	fileSkip := make(map[string]bool)
+	for _, file := range cfg.SkipFiles {
+		fileSkip[file] = true
+	}
+
+	extSkip := make(map[string]bool)
+	for _, ext := range cfg.SkipExtensions {
+		extSkip[ext] = true
+	}
 
 	filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -41,10 +59,7 @@ func GetAllFiles(path string) []Files {
 			Contents: "",
 		}
 
-		if contains(FoldSkip, info.Name()) || contains(FileSkip, info.Name()) {
-			return nil
-		}
-		if contains(FileSkip, file.Ext) {
+		if foldSkip[info.Name()] || fileSkip[info.Name()] || extSkip[file.Ext] {
 			return nil
 		}
 
@@ -55,34 +70,27 @@ func GetAllFiles(path string) []Files {
 	return listOfFiles
 }
 
-func contains(slice []string, item string) bool {
-	for _, s := range slice {
-		if s == item {
-			return true
-		}
-	}
-	return false
-}
-
-// func marshalFilesToJSON(files []Files, prompt string) marshalFiles {
-// 	return marshalFiles{
-// 		model:  files,
-// 		prompt: prompt,
-// 	}
-// }
-
+// WalkEmbed is a debug function that walks files and attempts to generate
+// embeddings for .txt and .rtf files, printing results to stdout.
+// It loads configuration from config.json.
 func WalkEmbed() {
-	embeddingModel := embedding.Model{
-		Url:  "http://localhost:1234/v1/embeddings",
-		Name: "nomic-embed-text",
+	cfg, err := config.Load("config.json")
+	if err != nil {
+		fmt.Println("Error loading config:", err)
+		return
 	}
 
-	files := GetAllFiles("/Users/alize/downloads")
+	model := embedding.Model{
+		Url:  cfg.Embedding.URL,
+		Name: cfg.Embedding.ModelName,
+	}
+
+	files := GetAllFiles(cfg.FileWalk.RootPath, cfg.FileWalk)
 
 	for _, file := range files {
 		request := embedding.Request{
 			Input: file.Contents,
-			Model: embeddingModel.Name,
+			Model: model.Name,
 		}
 		fmt.Println(file.FileName)
 		fmt.Println("Path:", file.FullPath)
@@ -98,13 +106,12 @@ func WalkEmbed() {
 			} else {
 				fmt.Println(string(content))
 			}
-			vector, err := embedding.Get(embeddingModel, request)
+			vector, err := embedding.Get(model, request)
 			if err != nil {
 				fmt.Println("Error getting embedding:", err)
 			} else {
 				fmt.Println("Embedding vector:", vector)
 			}
-
 		}
 		fmt.Println("-----")
 	}

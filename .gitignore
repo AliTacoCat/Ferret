@@ -1,0 +1,15 @@
+# Configuration file with secrets
+config.json
+
+# Build outputs
+ferret
+ferret.exe
+*.exe
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
